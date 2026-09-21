@@ -20,10 +20,27 @@ const mathDelimiters = [
   { left: "$", right: "$", display: false },
 ];
 
-export function renderMarkdown(source: string): string {
-  const rendered = marked.parse(source) as string;
+function renderFallback(source: string): string {
   const container = document.createElement("div");
+  const pre = document.createElement("pre");
 
+  pre.textContent = source;
+  container.appendChild(pre);
+
+  return DOMPurify.sanitize(container.innerHTML);
+}
+
+export function renderMarkdown(source: string): string {
+  let rendered: string;
+
+  try {
+    rendered = marked.parse(source) as string;
+  } catch (error) {
+    console.error("Markdownの解析に失敗しました", error);
+    return renderFallback(source);
+  }
+
+  const container = document.createElement("div");
   container.innerHTML = DOMPurify.sanitize(rendered);
 
   try {
