@@ -9,7 +9,8 @@ use tauri::{
 
 static WINDOW_COUNTER: AtomicU64 = AtomicU64::new(1);
 
-fn create_editor_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
+#[tauri::command]
+fn create_editor_window<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> tauri::Result<()> {
     let id = WINDOW_COUNTER.fetch_add(1, Ordering::Relaxed);
     let label = format!("editor-{id}");
 
@@ -95,7 +96,7 @@ fn main() {
                 .item(&window)
                 .build()
         })
-        .invoke_handler(tauri::generate_handler![print_webview])
+        .invoke_handler(tauri::generate_handler![create_editor_window, print_webview])
         .on_menu_event(|app, event| {
             match event.id().0.as_str() {
                 "new_window" => {
