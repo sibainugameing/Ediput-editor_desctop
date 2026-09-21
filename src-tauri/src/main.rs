@@ -41,11 +41,25 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .menu(|handle| {
+            let new_window = MenuItemBuilder::with_id("new_window", "新規ウィンドウ")
+                .accelerator("CmdOrCtrl+N")
+                .build(handle)?;
+            let open = MenuItemBuilder::with_id("open", "開く")
+                .accelerator("CmdOrCtrl+O")
+                .build(handle)?;
+            let save = MenuItemBuilder::with_id("save", "保存")
+                .accelerator("CmdOrCtrl+S")
+                .build(handle)?;
+            let export_pdf = MenuItemBuilder::with_id("export_pdf", "PDFを書き出す")
+                .accelerator("CmdOrCtrl+P")
+                .build(handle)?;
+
             let file = SubmenuBuilder::new(handle, "ファイル")
-                .text("new_window", "新規ウィンドウ")
-                .text("open", "開く")
-                .text("save", "保存")
-                .text("export_pdf", "PDFを書き出す")
+                .item(&new_window)
+                .item(&open)
+                .item(&save)
+                .separator()
+                .item(&export_pdf)
                 .separator()
                 .close_window()
                 .build()?;
