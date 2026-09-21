@@ -3,12 +3,8 @@
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use tauri::{
-    menu::SubmenuBuilder,
-    menu::MenuBuilder,
-    Emitter,
-    Manager,
-    WebviewWindowBuilder,
-    WebviewUrl,
+    menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
+    Emitter, Manager, WebviewWindowBuilder, WebviewUrl,
 };
 
 static WINDOW_COUNTER: AtomicU64 = AtomicU64::new(1);
