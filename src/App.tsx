@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
@@ -235,7 +236,7 @@ export default function App() {
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
     try {
-      await getCurrentWebviewWindow().print([]);
+      await getCurrentWebview().print([]);
       setStatus("PDF / 印刷");
     } catch (error) {
       console.error("ネイティブ印刷に失敗しました", error);
