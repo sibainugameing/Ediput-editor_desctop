@@ -1,38 +1,70 @@
 # Ediput Desktop
 
-Ediput のデスクトップ版。Electron を使用し、Markdown の編集・プレビュー、ローカルファイルの読み書き、PDF出力を行うための初期実装です。
+Ediput のデスクトップ版です。
 
-## 開発環境
+**macOS / Windows / Linux を正式ターゲット**にし、将来の Android / iOS 展開を考慮した構成です。
 
-- Node.js 20 以降
-- npm
+## 技術スタック
+
+- Tauri 2
+- React 19
+- TypeScript
+- Vite
+- CodeMirror 6
+- marked
+- DOMPurify
+- KaTeX
+- lucide-react
+- Rust
+
+Tauri は OS のネイティブ WebView を利用し、Linux / macOS / Windows / Android / iOS を単一コードベースから対象にできます。
+
+## 開発
+
+Node.js と Rust / Cargo、Tauri の各OS向け前提環境を用意してください。
 
 ```bash
 npm install
+npm run tauri:dev
+```
+
+Web UIだけ確認:
+
+```bash
 npm run dev
 ```
 
 ## ビルド
 
 ```bash
-npm run dist
+npm run tauri:build
 ```
 
-生成物は `dist/` に出力されます。macOS（DMG）、Windows（NSIS）、Linux（AppImage / deb）を設定しています。
+bundleターゲット:
+
+- macOS: DMG
+- Windows: NSIS
+- Linux: AppImage / deb
 
 ## 現在の機能
 
-- Graphite系のダークUI
-- Markdown入力とライブプレビュー
-- Markdown / textファイルを開く・保存する
-- A4 PDF出力（OSの印刷機能を利用）
-- Electron の `contextIsolation` と `nodeIntegration: false`
-- ファイル操作を preload 経由の限定APIに分離
+- CodeMirrorによるMarkdown編集
+- デバウンス付きライブプレビュー
+- Markdown / text ファイルの開く・保存
+- Ctrl/Cmd + O / S
+- ライト / ダークテーマ
+- サイドバー開閉
+- システム印刷UIからPDF保存
+- HTMLをDOMPurifyでサニタイズ
 
-## 制限事項
+## パフォーマンス方針
 
-現段階のMarkdownプレビューは軽量な独自実装です。表、数式、脚注、複雑なMarkdown拡張など、Web版の全機能との互換性はまだありません。PDFはプレビュー内容を印刷する方式です。
+- CodeMirrorの差分更新を利用
+- 編集とプレビュー更新を分離
+- プレビュー更新を短時間デバウンス
+- TauriのネイティブWebViewを利用
+- ファイルI/Oは操作時だけ実行
 
-## セキュリティ
+## 次の実装
 
-レンダラーからNode.js APIを直接利用できない構成です。MarkdownはHTMLとして直接信頼せず、テキストをエスケープしてから限定的な書式を適用します。
+高度なMarkdown互換性、KaTeX数式、画像、ドラッグ&ドロップ、最近使ったファイル、ネイティブPDF出力を順次追加します。
