@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
@@ -52,7 +53,7 @@ const initialDocument = [
   "",
   "> UIと編集レスポンスを優先して設計しています。",
   "",
-  "`# Hello, Ediput`",
+  "\`# Hello, Ediput\`",
   "",
 ].join("\n");
 
@@ -236,7 +237,7 @@ export default function App() {
     return () => window.removeEventListener("keydown", handler);
   });
 
-  const handleDividerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleDividerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "ArrowLeft") {
       event.preventDefault();
       setEditorRatio(value => clamp(value - 0.02, 0.3, 0.7));
@@ -250,8 +251,9 @@ export default function App() {
   const lineCount = source ? source.split("\n").length : 1;
   const characterCount = source.length;
   const workspaceStyle = {
-    "--editor-ratio": editorRatio,
-  } as React.CSSProperties;
+    "--editor-track": String(editorRatio) + "fr",
+    "--preview-track": String(1 - editorRatio) + "fr",
+  } as CSSProperties;
 
   return (
     <div className={dark ? "app dark" : "app light"}>
@@ -388,7 +390,10 @@ export default function App() {
             <span>PREVIEW</span>
             <span className="live"><i /> LIVE</span>
           </div>
-          <article className="markdown preview-content" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+          <article
+            className="markdown preview-content"
+            dangerouslySetInnerHTML={{ __html: previewHtml }}
+          />
         </section>
       </main>
 
