@@ -9,8 +9,9 @@ use tauri::{
 
 static WINDOW_COUNTER: AtomicU64 = AtomicU64::new(1);
 
-#[tauri::command]
-fn create_editor_window<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> tauri::Result<()> {
+fn create_editor_window_impl<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> tauri::Result<()> {
     let id = WINDOW_COUNTER.fetch_add(1, Ordering::Relaxed);
     let label = format!("editor-{id}");
 
@@ -22,6 +23,11 @@ fn create_editor_window<R: tauri::Runtime>(app: tauri::AppHandle<R>) -> tauri::R
         .build()?;
 
     Ok(())
+}
+
+#[tauri::command]
+fn create_editor_window(app: tauri::AppHandle) -> Result<(), String> {
+    create_editor_window_impl(&app).map_err(|error| format!("window creation failed: {error}"))
 }
 
 #[tauri::command]
@@ -100,7 +106,9 @@ fn main() {
         .on_menu_event(|app, event| {
             match event.id().0.as_str() {
                 "new_window" => {
-                    let _ = create_editor_window(app);
+                    if let Err(error) = create_editor_window_impl(app) {
+                        eprintln!("新規ウィンドウを作成できませんでした: {error}");
+                    }
                 }
                 "open" => emit_to_focused(app, "ediput-menu-open"),
                 "save" => emit_to_focused(app, "ediput-menu-save"),
