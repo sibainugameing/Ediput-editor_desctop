@@ -17,6 +17,7 @@ const mathDelimiters = [
   { left: "\\begin{alignat}", right: "\\end{alignat}", display: true },
   { left: "\\begin{gather}", right: "\\end{gather}", display: true },
   { left: "\\begin{CD}", right: "\\end{CD}", display: true },
+  { left: "$", right: "$", display: false },
 ];
 
 export function renderMarkdown(source: string): string {
