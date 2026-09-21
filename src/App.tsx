@@ -1,15 +1,17 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
-import { open, save, message } from "@tauri-apps/plugin-dialog";
+import { confirm, open, save, message } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import {
   FileOutput,
   FileText,
+  FilePlus2,
   FolderOpen,
   Menu,
   PanelLeftClose,
@@ -122,6 +124,11 @@ export default function App() {
   }, [editorRatio]);
 
   useEffect(() => {
+    const title = currentPath ? baseName(currentPath) : "Untitled.md";
+    void getCurrentWindow().setTitle((dirty ? "● " : "") + title + " — Ediput");
+  }, [currentPath, dirty]);
+
+  useEffect(() => {
     if (!resizing) return;
 
     const handlePointerMove = (event: PointerEvent) => {
@@ -162,7 +169,25 @@ export default function App() {
     setStatus(currentPath ? baseName(currentPath) + " · 未保存" : "未保存の変更");
   };
 
+  const confirmDiscard = async () => {
+    if (!dirty) return true;
+    return confirm("未保存の変更があります。破棄して続行しますか？", {
+      title: "Ediput",
+      kind: "warning",
+    });
+  };
+
+  const newDocument = async () => {
+    if (!(await confirmDiscard())) return;
+    setSource(initialDocument);
+    setPreviewSource(initialDocument);
+    setCurrentPath(null);
+    setDirty(false);
+    setStatus("新規ドキュメント");
+  };
+
   const openDocument = async () => {
+    if (!(await confirmDiscard())) return;
     try {
       const selected = await open({
         multiple: false,
@@ -231,6 +256,11 @@ export default function App() {
         event.preventDefault();
         void openDocument();
       }
+
+      if ((event.metaKey || event.ctrlKey) && key === "n") {
+        event.preventDefault();
+        void newDocument();
+      }
     };
 
     window.addEventListener("keydown", handler);
@@ -274,6 +304,10 @@ export default function App() {
         </div>
 
         <div className="toolbar">
+          <button onClick={() => void newDocument()} title="新規">
+            <FilePlus2 size={16} />
+            <span>新規</span>
+          </button>
           <button onClick={() => void openDocument()} title="開く">
             <FolderOpen size={16} />
             <span>開く</span>
