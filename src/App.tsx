@@ -23,20 +23,37 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const editorTheme = EditorView.theme({
-  "&": { backgroundColor: "#0f1419", color: "#dfe7ee", height: "100%" },
+const editorThemeShared = {
   ".cm-scroller": {
     fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
     fontSize: "14px",
     lineHeight: "1.75",
     overflow: "auto",
   },
-  ".cm-content": { padding: "28px 24px", caretColor: "#7dd3fc" },
+  ".cm-content": { padding: "28px 24px" },
+};
+
+const editorDarkTheme = EditorView.theme({
+  "&": { backgroundColor: "#0f1419", color: "#dfe7ee", height: "100%" },
+  ...editorThemeShared,
+  ".cm-content": { ...editorThemeShared[".cm-content"], caretColor: "#7dd3fc" },
   ".cm-gutters": { backgroundColor: "#0f1419", color: "#566474", border: "none" },
   ".cm-activeLine": { backgroundColor: "rgba(125, 211, 252, 0.045)" },
   ".cm-activeLineGutter": { backgroundColor: "rgba(125, 211, 252, 0.045)" },
   ".cm-selectionBackground, ::selection": {
     backgroundColor: "rgba(125, 211, 252, 0.22) !important",
+  },
+});
+
+const editorLightTheme = EditorView.theme({
+  "&": { backgroundColor: "#ffffff", color: "#18212a", height: "100%" },
+  ...editorThemeShared,
+  ".cm-content": { ...editorThemeShared[".cm-content"], caretColor: "#007f9b" },
+  ".cm-gutters": { backgroundColor: "#ffffff", color: "#87929e", border: "none" },
+  ".cm-activeLine": { backgroundColor: "rgba(0, 127, 155, 0.055)" },
+  ".cm-activeLineGutter": { backgroundColor: "rgba(0, 127, 155, 0.055)" },
+  ".cm-selectionBackground, ::selection": {
+    backgroundColor: "rgba(0, 127, 155, 0.18) !important",
   },
 });
 
@@ -72,6 +89,7 @@ export default function App() {
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [status, setStatus] = useState("新規書類");
+  const [printHtml, setPrintHtml] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dark, setDark] = useState(() => readStoredBoolean("ediput-theme-dark", true));
   const [editorRatio, setEditorRatio] = useState(() =>
@@ -223,6 +241,7 @@ export default function App() {
 
   const printDocument = async () => {
     setStatus("PDF出力を準備中…");
+    setPrintHtml(renderMarkdown(source));
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
     try {
@@ -260,25 +279,31 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
-    const subscriptions = [
-      listen("ediput-menu-open", () => void openDocumentRef.current()),
-      listen("ediput-menu-save", () => void saveDocumentRef.current()),
-      listen("ediput-menu-pdf", () => void printDocumentRef.current()),
-      listen("ediput-menu-sidebar", () => setSidebarOpen(value => !value)),
-      listen("ediput-menu-theme", () => setDark(value => !value)),
-    ];
+    let unsubscribers: Array<() => void> = [];
 
-    void Promise.all(subscriptions).then(unsubscribers => {
+    const subscribe = async () => {
+      const nextUnsubscribers = await Promise.all([
+        listen("ediput-menu-open", () => void openDocumentRef.current()),
+        listen("ediput-menu-save", () => void saveDocumentRef.current()),
+        listen("ediput-menu-pdf", () => void printDocumentRef.current()),
+        listen("ediput-menu-sidebar", () => setSidebarOpen(value => !value)),
+        listen("ediput-menu-theme", () => setDark(value => !value)),
+      ]);
+
       if (cancelled) {
-        unsubscribers.forEach(unsubscribe => unsubscribe());
+        nextUnsubscribers.forEach(unsubscribe => unsubscribe());
+        return;
       }
-    });
+
+      unsubscribers = nextUnsubscribers;
+    };
+
+    void subscribe();
 
     return () => {
       cancelled = true;
-      void Promise.all(subscriptions).then(unsubscribers => {
-        unsubscribers.forEach(unsubscribe => unsubscribe());
-      });
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+      unsubscribers = [];
     };
   }, []);
 
@@ -322,8 +347,8 @@ export default function App() {
     }
   };
 
-  const lineCount = source ? source.split("\n").length : 0;
-  const characterCount = source.length;
+  const lineCount = source.split("\n").length;
+  const characterCount = Array.from(source).length;
   const workspaceStyle = {
     "--editor-track": String(editorRatio) + "fr",
     "--preview-track": String(1 - editorRatio) + "fr",
@@ -423,7 +448,7 @@ export default function App() {
             <CodeMirror
               value={source}
               height="100%"
-              theme={editorTheme}
+              theme={dark ? editorDarkTheme : editorLightTheme}
               extensions={[markdown({ base: markdownLanguage })]}
               basicSetup={{
                 lineNumbers: true,
@@ -479,7 +504,7 @@ export default function App() {
       </footer>
 
       <div className="print-only">
-        <article className="markdown" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+        <article className="markdown" dangerouslySetInnerHTML={{ __html: printHtml }} />
       </div>
     </div>
   );
