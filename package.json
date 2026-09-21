@@ -2,24 +2,35 @@
   "name": "ediput-desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Ediput desktop Markdown editor",
-  "main": "src/main.cjs",
+  "type": "module",
+  "description": "Ediput desktop Markdown editor for macOS, Windows and Linux",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron .",
-    "dist": "electron-builder"
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-dialog": "^2.7.2",
+    "@tauri-apps/plugin-fs": "^2.5.1",
+    "@uiw/react-codemirror": "^4.23.10",
+    "dompurify": "^3.2.4",
+    "katex": "^0.16.22",
+    "lucide-react": "^0.468.0",
+    "marked": "^15.0.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "electron": "^36.0.0",
-    "electron-builder": "^26.0.0"
-  },
-  "build": {
-    "appId": "dev.ediput.desktop",
-    "productName": "Ediput",
-    "files": ["src/**/*", "package.json"],
-    "directories": { "output": "dist" },
-    "mac": { "target": ["dmg"] },
-    "win": { "target": ["nsis"] },
-    "linux": { "target": ["AppImage", "deb"] }
+    "@tauri-apps/cli": "^2.11.4",
+    "@types/dompurify": "^3.2.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.5"
   }
 }
