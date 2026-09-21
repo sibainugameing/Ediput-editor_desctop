@@ -254,25 +254,6 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-
-      if ((event.metaKey || event.ctrlKey) && key === "s") {
-        event.preventDefault();
-        void saveDocumentRef.current();
-      }
-
-      if ((event.metaKey || event.ctrlKey) && key === "o") {
-        event.preventDefault();
-        void openDocumentRef.current();
-      }
-    };
-
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
   openDocumentRef.current = openDocument;
   saveDocumentRef.current = saveDocument;
   printDocumentRef.current = printDocument;
