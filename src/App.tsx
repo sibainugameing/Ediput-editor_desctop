@@ -320,17 +320,21 @@ export default function App() {
       .onCloseRequested(async event => {
         if (closeBypassRef.current || !dirty) return;
 
-        event.preventDefault();
+        try {
+          event.preventDefault();
 
-        const confirmed = await confirm("未保存の変更があります。保存せずに閉じますか？", {
-          title: "Ediput",
-          kind: "warning",
-        });
+          const confirmed = await confirm("未保存の変更があります。保存せずに閉じますか？", {
+            title: "Ediput",
+            kind: "warning",
+          });
 
-        if (!confirmed || cancelled) return;
+          if (!confirmed || cancelled) return;
 
-        closeBypassRef.current = true;
-        await getCurrentWebviewWindow().close();
+          closeBypassRef.current = true;
+          await getCurrentWebviewWindow().close();
+        } catch (error) {
+          console.error("終了処理に失敗しました", error);
+        }
       })
       .then(value => {
         if (cancelled) {
