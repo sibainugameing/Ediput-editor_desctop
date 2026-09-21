@@ -83,6 +83,9 @@ export default function App() {
   const saveLock = useRef(false);
   const closeBypassRef = useRef(false);
   const workspaceRef = useRef<HTMLElement | null>(null);
+  const openDocumentRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const saveDocumentRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const printDocumentRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   useEffect(() => {
     const id = window.setTimeout(() => setPreviewSource(source), 60);
@@ -260,12 +263,16 @@ export default function App() {
     return () => window.removeEventListener("keydown", handler);
   });
 
+  openDocumentRef.current = openDocument;
+  saveDocumentRef.current = saveDocument;
+  printDocumentRef.current = printDocument;
+
   useEffect(() => {
     let cancelled = false;
     const subscriptions = [
-      listen("ediput-menu-open", () => void openDocument()),
-      listen("ediput-menu-save", () => void saveDocument()),
-      listen("ediput-menu-pdf", () => void printDocument()),
+      listen("ediput-menu-open", () => void openDocumentRef.current()),
+      listen("ediput-menu-save", () => void saveDocumentRef.current()),
+      listen("ediput-menu-pdf", () => void printDocumentRef.current()),
       listen("ediput-menu-sidebar", () => setSidebarOpen(value => !value)),
       listen("ediput-menu-theme", () => setDark(value => !value)),
     ];
@@ -282,7 +289,7 @@ export default function App() {
         unsubscribers.forEach(unsubscribe => unsubscribe());
       });
     };
-  });
+  }, []);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
