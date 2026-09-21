@@ -1,8 +1,22 @@
 # Ediput Desktop
 
-Ediput のデスクトップ版です。
+Ediput Desktop は、Web版とは別に設計・開発する独立したMarkdownエディタです。Web版のUIや操作フローを踏襲せず、デスクトップに最適化した体験を作ります。
 
-**macOS / Windows / Linux を正式ターゲット**にし、将来の Android / iOS 展開を考慮した構成です。
+## 対象プラットフォーム
+
+- macOS
+- Windows
+- Linux
+
+スマートフォン版（Android / iOS）は、デスクトップ版の基盤と使い勝手を確認した後に、必要性を判断します。現時点では対応確定ではありません。
+
+## 設計方針
+
+- **UI**: デスクトップ独自の画面構成・操作フロー
+- **速度**: 入力応答を優先し、プレビューなど重い処理は編集処理から分離
+- **OS連携**: ネイティブのファイル選択・保存・印刷を活用
+- **独立性**: Web版のコードや変更に依存しない
+- **移植性**: macOS / Windows / Linuxを同じアプリ基盤で展開
 
 ## 技術スタック
 
@@ -13,15 +27,13 @@ Ediput のデスクトップ版です。
 - CodeMirror 6
 - marked
 - DOMPurify
-- KaTeX
+- KaTeX（数式表示の実装予定）
 - lucide-react
 - Rust
 
-Tauri は OS のネイティブ WebView を利用し、Linux / macOS / Windows / Android / iOS を単一コードベースから対象にできます。
-
 ## 開発
 
-Node.js と Rust / Cargo、Tauri の各OS向け前提環境を用意してください。
+Node.js と Rust / Cargo、Tauriの各OS向け前提環境を用意してください。
 
 ```bash
 npm install
@@ -46,11 +58,11 @@ bundleターゲット:
 - Windows: NSIS
 - Linux: AppImage / deb
 
-## 現在の機能
+## 現在の実装
 
 - CodeMirrorによるMarkdown編集
 - デバウンス付きライブプレビュー
-- Markdown / text ファイルの開く・保存
+- Markdown / textファイルの開く・保存
 - Ctrl/Cmd + O / S
 - ライト / ダークテーマ
 - サイドバー開閉
@@ -67,4 +79,4 @@ bundleターゲット:
 
 ## 次の実装
 
-高度なMarkdown互換性、KaTeX数式、画像、ドラッグ&ドロップ、最近使ったファイル、ネイティブPDF出力を順次追加します。
+Markdown拡張・数式表示・画像対応・ドラッグ&ドロップ・最近使ったファイル・ネイティブPDF出力を順次検討・実装します。
