@@ -1,0 +1,25 @@
+{
+  "name": "ediput-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ediput desktop Markdown editor",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "dev.ediput.desktop",
+    "productName": "Ediput",
+    "files": ["src/**/*", "package.json"],
+    "directories": { "output": "dist" },
+    "mac": { "target": ["dmg"] },
+    "win": { "target": ["nsis"] },
+    "linux": { "target": ["AppImage", "deb"] }
+  }
+}
