@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
 import { confirm, open, save, message } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
+import { renderMarkdown } from "./markdown";
 import {
   FileOutput,
   FileText,
@@ -40,8 +39,6 @@ const editorTheme = EditorView.theme({
     backgroundColor: "rgba(125, 211, 252, 0.22) !important",
   },
 });
-
-marked.setOptions({ gfm: true, breaks: false });
 
 function baseName(path: string) {
   return path.split(/[\\/]/).pop() || "無題";
@@ -137,10 +134,7 @@ export default function App() {
     };
   }, [resizing, sidebarOpen]);
 
-  const previewHtml = useMemo(
-    () => DOMPurify.sanitize(marked.parse(previewSource) as string),
-    [previewSource],
-  );
+  const previewHtml = useMemo(() => renderMarkdown(previewSource), [previewSource]);
 
   const onEdit = (value: string) => {
     setSource(value);
@@ -156,20 +150,16 @@ export default function App() {
     });
   };
 
-  const createNewWindow = () => {
-    const label = "editor-" + Date.now().toString(36);
-    const window = new WebviewWindow(label, {
-      url: "index.html",
-      title: "無題 — Ediput",
-      width: 1280,
-      height: 820,
-      minWidth: 960,
-      minHeight: 620,
-      resizable: true,
-    });
-    window.once("tauri://error", event => {
-      console.error("新規ウィンドウを作成できませんでした", event);
-    });
+  const createNewWindow = async () => {
+    try {
+      await invoke("create_editor_window");
+    } catch (error) {
+      console.error("新規ウィンドウを作成できませんでした", error);
+      await message("新規ウィンドウを作成できませんでした。", {
+        title: "Ediput",
+        kind: "error",
+      });
+    }
   };
 
   const openDocument = async () => {
@@ -251,18 +241,18 @@ export default function App() {
 
       if ((event.metaKey || event.ctrlKey) && key === "s") {
         event.preventDefault();
-        void saveDocument();
+        void saveDocumentRef.current();
       }
 
       if ((event.metaKey || event.ctrlKey) && key === "o") {
         event.preventDefault();
-        void openDocument();
+        void openDocumentRef.current();
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  });
+  }, []);
 
   openDocumentRef.current = openDocument;
   saveDocumentRef.current = saveDocument;
