@@ -8,8 +8,9 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "tauri:icons": "tauri icon src-tauri/icons/icon.svg",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "npm run tauri:icons && tauri build"
   },
   "dependencies": {
     "@codemirror/lang-markdown": "^6.3.2",
