@@ -310,8 +310,10 @@ export default function App() {
       unsubscribers.forEach(unsubscribe => unsubscribe());
       unsubscribers = [];
     };
+  }, []);
 
   useEffect(() => {
+    let cancelled = false;
     let unlisten: (() => void) | undefined;
 
     void getCurrentWebviewWindow()
@@ -325,16 +327,25 @@ export default function App() {
           kind: "warning",
         });
 
-        if (!confirmed) return;
+        if (!confirmed || cancelled) return;
 
         closeBypassRef.current = true;
         await getCurrentWebviewWindow().close();
       })
       .then(value => {
+        if (cancelled) {
+          value();
+          return;
+        }
+
         unlisten = value;
+      })
+      .catch(error => {
+        console.error("終了イベントの登録に失敗しました", error);
       });
 
     return () => {
+      cancelled = true;
       unlisten?.();
     };
   }, [dirty]);
