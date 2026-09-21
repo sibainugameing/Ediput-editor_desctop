@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ediput</title><link rel="stylesheet" href="styles.css"></head>
+<body><header class="topbar"><div class="brand"><span class="mark">E</span><span>Ediput</span><small>DESKTOP</small></div><div class="actions"><button id="open">開く</button><button id="save">保存</button><button id="pdf" class="primary">PDF出力</button></div></header>
+<main><section class="pane editor-pane"><div class="pane-head"><span>MARKDOWN</span><span id="status">新規ドキュメント</span></div><textarea id="editor" spellcheck="false" aria-label="Markdown editor" placeholder="# ドキュメントを作成\n\nここにMarkdownを入力…"># Ediputへようこそ
+
+Markdownを入力すると、右側にプレビューが表示されます。
+
+## はじめに
+
+- **太字** と *斜体*
+- [リンク](https://example.com)
+- `コード`
+
+> ここに引用文
+
+```js
+console.log('Hello, Ediput!');
+```
+</textarea></section><section class="pane preview-pane"><div class="pane-head"><span>プレビュー</span><span class="live"><i></i> LIVE</span></div><article id="preview" class="markdown"></article></section></main><footer><span>Ediput Desktop</span><span>Markdown · Local files · PDF</span></footer><script src="renderer.js"></script></body></html>
