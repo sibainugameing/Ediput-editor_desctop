@@ -369,7 +369,7 @@ export default function App() {
           <div className="brand-mark" aria-hidden="true">E</div>
           <div className="document-title">
             <strong>{currentPath ? baseName(currentPath) : "無題"}</strong>
-            <span>{dirty ? "未保存" : "保存済み"}</span>
+            <span>{dirty ? "未保存" : currentPath ? "保存済み" : "新規書類"}</span>
           </div>
         </div>
 
@@ -499,7 +499,7 @@ export default function App() {
       </main>
 
       <footer className="statusbar">
-        <span>{dirty ? "未保存の変更" : "保存済み"}</span>
+        <span>{dirty ? "未保存の変更" : currentPath ? "保存済み" : "新規書類"}</span>
         <span>{lineCount} 行 · {characterCount.toLocaleString()} 文字</span>
       </footer>
 
