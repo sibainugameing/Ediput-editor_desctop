@@ -119,7 +119,11 @@ export default function App() {
 
   useEffect(() => {
     const title = currentPath ? baseName(currentPath) : "無題";
-    void getCurrentWebviewWindow().setTitle((dirty ? "● " : "") + title + " — Ediput");
+    void getCurrentWebviewWindow()
+      .setTitle((dirty ? "● " : "") + title + " — Ediput")
+      .catch(error => {
+        console.error("ウィンドウタイトルを更新できませんでした", error);
+      });
   }, [currentPath, dirty]);
 
   useEffect(() => {
@@ -249,8 +253,18 @@ export default function App() {
       setStatus("PDF / 印刷");
     } catch (error) {
       console.error("ネイティブ印刷に失敗しました", error);
-      window.print();
-      setStatus("PDF / 印刷");
+
+      try {
+        window.print();
+        setStatus("PDF / 印刷");
+      } catch (fallbackError) {
+        console.error("WebView印刷にも失敗しました", fallbackError);
+        setStatus("PDF出力に失敗");
+        await message("PDF / 印刷を開始できませんでした。", {
+          title: "Ediput",
+          kind: "error",
+        });
+      }
     }
   };
 
@@ -263,20 +277,30 @@ export default function App() {
     let unsubscribers: Array<() => void> = [];
 
     const subscribe = async () => {
-      const nextUnsubscribers = await Promise.all([
-        listen("ediput-menu-open", () => void openDocumentRef.current()),
-        listen("ediput-menu-save", () => void saveDocumentRef.current()),
-        listen("ediput-menu-pdf", () => void printDocumentRef.current()),
-        listen("ediput-menu-sidebar", () => setSidebarOpen(value => !value)),
-        listen("ediput-menu-theme", () => setDark(value => !value)),
-      ]);
+      const subscriptions: Array<[string, () => void]> = [
+        ["ediput-menu-open", () => void openDocumentRef.current()],
+        ["ediput-menu-save", () => void saveDocumentRef.current()],
+        ["ediput-menu-pdf", () => void printDocumentRef.current()],
+        ["ediput-menu-sidebar", () => setSidebarOpen(value => !value)],
+        ["ediput-menu-theme", () => setDark(value => !value)],
+      ];
+      const nextUnsubscribers: Array<() => void> = [];
 
-      if (cancelled) {
+      try {
+        for (const [event, handler] of subscriptions) {
+          nextUnsubscribers.push(await listen(event, handler));
+        }
+
+        if (cancelled) {
+          nextUnsubscribers.forEach(unsubscribe => unsubscribe());
+          return;
+        }
+
+        unsubscribers = nextUnsubscribers;
+      } catch (error) {
+        console.error("ネイティブメニューの登録に失敗しました", error);
         nextUnsubscribers.forEach(unsubscribe => unsubscribe());
-        return;
       }
-
-      unsubscribers = nextUnsubscribers;
     };
 
     void subscribe();
@@ -286,7 +310,6 @@ export default function App() {
       unsubscribers.forEach(unsubscribe => unsubscribe());
       unsubscribers = [];
     };
-  }, []);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
