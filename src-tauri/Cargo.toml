@@ -1,0 +1,14 @@
+[package]
+name = "ediput-desktop"
+version = "0.1.0"
+description = "Ediput desktop Markdown editor"
+authors = ["Ediput"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.6.3" }
+
+[dependencies]
+tauri = { version = "2.11.5" }
+tauri-plugin-dialog = "2.7.2"
+tauri-plugin-fs = "2.5.1"
