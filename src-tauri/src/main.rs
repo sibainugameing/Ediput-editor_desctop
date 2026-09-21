@@ -27,6 +27,11 @@ fn create_editor_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::
     Ok(())
 }
 
+#[tauri::command]
+fn print_webview(window: tauri::WebviewWindow) -> Result<(), String> {
+    window.print().map_err(|error| format!("print failed: {error}"))
+}
+
 fn emit_to_focused<R: tauri::Runtime>(app: &tauri::AppHandle<R>, event: &str) {
     for window in app.webview_windows().values() {
         if window.is_focused().unwrap_or(false) {
@@ -94,6 +99,7 @@ fn main() {
                 .item(&window)
                 .build()
         })
+        .invoke_handler(tauri::generate_handler![print_webview])
         .on_menu_event(|app, event| {
             match event.id().0.as_str() {
                 "new_window" => {
